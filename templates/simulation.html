@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <!-- <link rel="stylesheet" type="text/css" href="{{url_for('static',filename= 'styles.css')}}"> -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <div class="flex-box">
+      <button class="btn btn-primary" onclick="initiate()">Start Waveform</button>
+      <button class="btn btn-primary" onclick="stopwave()">Stop Waveform</button>
+    <div id="waveform_display">
+      <canvas id="disp">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+              <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+                  <path d="M 8 0 L 0 0 0 8" fill="none" stroke="gray" stroke-width="0.5" />
+              </pattern>
+              <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+                  <rect width="80" height="80" fill="url(#smallGrid)" />
+                  <path d="M 80 0 L 0 0 0 80" fill="none" stroke="gray" stroke-width="1" />
+              </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#smallGrid)" />
+      </svg>
+      </canvas>
+    </div>
+    <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+      Configure
+    </button>
+    <button  type="button" class="btn btn-primary" onclick="zoom_in()" id = "zoom-plus">
+      Zoom + 
+    </button>
+    <button  type="button" class="btn btn-primary" onclick="zoom_out()" id = "zoom-minus">
+      Zoom - 
+    </button>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Configuration Settings</h5>
+          </div>
+          <div class="modal-body">
+              <form action="" id="sampleform">
+                <div class="optiontype-details">
+                  <input type="radio" name="option" id="dot-1">
+                  <input type="radio" name="option" id="dot-2">
+                  <input type="radio" name="option" id="dot-3">
+                  <span class="option-title"></span>
+                  <div class="category">
+                    <label for="dot-1">
+                    <span class="dot one"></span>
+                    <span class="option">WIFI</span>
+                  </label>
+                  <label for="dot-2">
+                    <span class="dot two"></span>
+                    <span class="option">USB</span>
+                  </label>
+                  <label for="dot-3">
+                    <span class="dot three"></span>
+                    <span class="option">Bluetooth</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="signal-type">
+                  <p>Signal</p>
+                  <input type="radio" name="signal" id="dot-4">
+                  <input type="radio" name="signal" id="dot-5">
+                  <div class="category">
+                    <label for="dot-4">
+                      <span class="dot four"></span>
+                      <span class="option">Analog</span>
+                    </label>
+                    <label for="dot-5">
+                      <span class="dot five"></span>
+                      <span class="option">Digital</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="channels">
+                  <div class="input-box">
+                    <span class="details">Number of Channels : </span>
+                    <input id="Channel" type="number" min="1" max="8">
+                  </div>
+                </div>
+                
+              </form>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" name="button" id = "button-1" data-dismiss="modal"  >Configure</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </body>
+  <script type="text/javascript">
+  var drawGrid = function(w, h, id) {
+    var canvas = document.getElementById(id);
+    var ctx = canvas.getContext('2d');
+    ctx.canvas.width  = w;
+    ctx.canvas.height = h;
+    
+    var data = '<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"> \
+        <defs> \
+            <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse"> \
+                <path d="M 8 0 L 0 0 0 8" fill="none" stroke="gray" stroke-width="0.5" /> \
+            </pattern> \
+            <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse"> \
+                <rect width="80" height="80" fill="url(#smallGrid)" /> \
+                <path d="M 80 0 L 0 0 0 80" fill="none" stroke="gray" stroke-width="1" /> \
+            </pattern> \
+        </defs> \
+        <rect width="100%" height="100%" fill="url(#smallGrid)" /> \
+    </svg>';
+
+    var DOMURL = window.URL || window.webkitURL || window;
+    
+    var img = new Image();
+    var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+    var url = DOMURL.createObjectURL(svg);
+    
+    img.onload = function () {
+      ctx.drawImage(img, 0, 0);
+      DOMURL.revokeObjectURL(url);
+    }
+    img.src = url;
+}
+        $(document).ready(function() {
+            $("exampleModal").modal();
+            });
+            var closed = true;
+            var gateway;
+            var websocket;
+            var trig_value;
+            var DSo_mode;
+            var c = document.getElementById("disp");
+            var ctx = c.getContext("2d");
+            onLoad();
+            async function initiate() {
+                gateway = 'ws://172.16.81.81/ws';
+                closed = false;
+                initWebSocket();
+            }
+    
+            function initWebSocket() {
+                console.log('Trying to open a WebSocket connection...');
+                websocket = new WebSocket(gateway);
+                websocket.onopen    = onOpen;
+                websocket.onclose   = onClose;
+                websocket.onmessage = onMessage; // <-- add this line
+            }
+            async function onOpen(event) {
+                console.log('Connection opened');
+                document.getElementById("dot-1").checked = true;
+                document.getElementById("dot-1").disabled = true;
+                document.getElementById("dot-2").disabled = true;
+                document.getElementById("dot-3").disabled = true;
+            }
+            async function onClose(event) {
+                console.log('Connection closed');
+                if(closed){
+                setTimeout(initWebSocket, 2000);
+                }
+            }
+            function onLoad() {
+                console.log("run");
+                c.width = window.innerWidth;
+                c.height = window.innerHeight;
+            }
+    
+            async function onMessage(event) {
+                var state;
+                plot(event.data.split(" "));
+                // document.getElementById("waveform_display").innerHTML = event.data.split(" ");
+                //console.log(event.data.split(" "));
+                // var d = new Date();
+                // document.getElementById("waveform_display").innerHTML += "\n" + d;
+                //websocket.close();
+            }
+
+            function stopwave(){
+              websocket.close();
+              closed = true;
+            }
+            function stroke_properties(cntx_name) {
+                cntx_name.lineCap = 'round';
+                cntx_name.lineWidth = 1;
+                cntx_name.strokeStyle = 'blue';
+                cntx_name.lineJoin = 'round';
+            }
+            
+            var timeAxis2 = 0;
+            function zoom_in(){
+                timeAxis2 += 0.1; 
+                console.log(timeAxis2);
+            }
+            function zoom_out(){
+                timeAxis2 -= 0.1; 
+                console.log(timeAxis2);
+            }
+            async function plot(adc_array) {
+               console.log(adc_array);
+               $.ajax({
+                  type : 'POST',
+                  url : "/path",
+                  contentType: 'application/json;charset=UTF-8',
+                  data : adc_array
+                });
+                ctx.clearRect(0,0,c.width,c.height);
+                drawGrid(1200, 700, "disp");
+                var amplitudeAxis = c.height;
+                var yOffset = amplitudeAxis -225 ;
+                var timeAxis = 0;
+                stroke_properties(ctx);
+                ctx.beginPath();
+                ctx.moveTo(timeAxis,(yOffset -(1+timeAxis2)*(adc_array.pop()/4095)*(amplitudeAxis-4)));
+                adc_array.forEach(element => {
+                  timeAxis += 0.75 + timeAxis2;
+                  // console.log(timeAxis);
+                  //replace the number with zooming %
+                    ctx.lineTo(timeAxis, (1+timeAxis2)*(yOffset -((element/4095)*(amplitudeAxis-4))));
+                });
+                ctx.stroke();
+            }
+          </script>
+</html>
